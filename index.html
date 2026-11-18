@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sincronización con Google Sheets</title>
+    <title>Registro de Turnos - Pacientes</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
             max-width: 500px;
-            margin: 50px auto;
+            margin: 40px auto;
             padding: 20px;
             background-color: #f8fafc;
             color: #1e293b;
@@ -34,7 +34,7 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
-        input, textarea {
+        input, select {
             width: 100%;
             padding: 10px;
             border: 1px solid #cbd5e1;
@@ -44,7 +44,7 @@
             outline: none;
             transition: border-color 0.2s;
         }
-        input:focus, textarea:focus {
+        input:focus, select:focus {
             border-color: #2563eb;
         }
         button {
@@ -89,49 +89,69 @@
 <body>
 
 <div class="card">
-    <h2>Registro de Datos</h2>
-    <form id="formularioDatos">
+    <h2>Registro de Turno Médico</h2>
+    <form id="formTurno">
         <div class="form-group">
-            <label for="nombre">Nombre o Referencia</label>
-            <input type="text" id="nombre" name="nombre" required placeholder="Ej. Reporte Diario">
+            <label for="profesional_id">Profesional</label>
+            <select id="profesional_id" name="profesional_id" required>
+                <option value="prof_01">Lic. María Gómez</option>
+                <option value="prof_02">Dr. Carlos Benítez</option>
+            </select>
         </div>
+
         <div class="form-group">
-            <label for="detalle">Detalle / Información</label>
-            <textarea id="detalle" name="detalle" rows="4" required placeholder="Escribe los datos o notas aquí..."></textarea>
+            <label for="paciente_nombre">Nombre del Paciente</label>
+            <input type="text" id="paciente_nombre" name="paciente_nombre" required placeholder="Ej. Juan Pérez">
         </div>
-        <button type="submit" id="btnEnviar">Enviar a Google Sheets</button>
+
+        <div class="form-group">
+            <label for="paciente_email">Correo Electrónico</label>
+            <input type="email" id="paciente_email" name="paciente_email" required placeholder="correo@ejemplo.com">
+        </div>
+
+        <div class="form-group">
+            <label for="inicio_iso">Fecha y Hora del Turno</label>
+            <input type="datetime-local" id="inicio_iso" name="inicio_iso" required>
+        </div>
+
+        <button type="submit" id="btnEnviar">Guardar Turno</button>
     </form>
     <div id="estado"></div>
 </div>
 
 <script>
-    // URL de tu Web App de Apps Script implementada
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBhOld5cC7fqoqTaxd6LtbYe1jEm03tfOQ5gTnMNzwKUOAlVb-5y0xPacY2KU9Pmi/exec';
+    // URL de tu Web App de Apps Script actualizada
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBhOId5cCT7fqoqTaxd6LtbYe1jEm03tfOQ5gTnMNzwKUOAlVB-5y0xPacY2KU9Pmi/exec';
 
-    const form = document.getElementById('formularioDatos');
+    const form = document.getElementById('formTurno');
     const btnEnviar = document.getElementById('btnEnviar');
     const estadoDiv = document.getElementById('estado');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Cambiar estado del botón y ocultar mensajes previos
         btnEnviar.disabled = true;
-        btnEnviar.textContent = 'Enviando...';
+        btnEnviar.textContent = 'Registrando turno...';
         estadoDiv.style.display = 'none';
 
-        // Estructura de datos que recibirá Apps Script
+        // Capturar fecha seleccionada y calcular un estimado de fin (ej. 30 min después)
+        const fechaInicioVal = document.getElementById('inicio_iso').value;
+        const fechaInicioObj = new Date(fechaInicioVal);
+        const fechaFinObj = new Date(fechaInicioObj.getTime() + 30 * 60000); // +30 minutos
+
         const payload = {
-            fecha: new Date().toISOString(),
-            nombre: document.getElementById('nombre').value.trim(),
-            detalle: document.getElementById('detalle').value.trim()
+            profesional_id: document.getElementById('profesional_id').value,
+            paciente_nombre: document.getElementById('paciente_nombre').value.trim(),
+            paciente_email: document.getElementById('paciente_email').value.trim(),
+            inicio_iso: fechaInicioObj.toISOString(),
+            fin_iso: fechaFinObj.toISOString()
         };
 
         try {
             const response = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'text/plain;charset=utf-8', // Evita bloqueos de CORS
+                    'Content-Type': 'text/plain;charset=utf-8',
                 },
                 body: JSON.stringify(payload)
             });
@@ -143,18 +163,18 @@
             const resultado = await response.json();
 
             if (resultado.status === 'success') {
-                mostrarMensaje('¡Datos guardados correctamente en la hoja!', 'exito');
+                mostrarMensaje('¡Turno registrado con éxito en la hoja Turnos!', 'exito');
                 form.reset();
             } else {
-                throw new Error(resultado.message || 'Error desconocido en el servidor.');
+                throw new Error(resultado.message || 'Error en el servidor.');
             }
 
         } catch (error) {
-            console.error('Error en la petición:', error);
-            mostrarMensaje(`No se pudo enviar: ${error.message}`, 'error');
+            console.error('Error:', error);
+            mostrarMensaje(`No se pudo registrar el turno: ${error.message}`, 'error');
         } finally {
             btnEnviar.disabled = false;
-            btnEnviar.textContent = 'Enviar a Google Sheets';
+            btnEnviar.textContent = 'Guardar Turno';
         }
     });
 

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Turnos Médicos</title>
+    <title>Gestión de Turnos Médicos - Corrientes</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            max-width: 600px;
+            max-width: 650px;
             margin: 30px auto;
             padding: 20px;
             background-color: #f8fafc;
@@ -40,18 +40,32 @@
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
         th, td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: left; }
         th { background-color: #f1f5f9; }
+        .btn-cancel {
+            background-color: #ef4444; color: white; border: none; padding: 6px 10px;
+            border-radius: 4px; cursor: pointer; font-size: 0.8rem;
+        }
+        .btn-cancel:hover { background-color: #dc2626; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Nuevo Turno Médico</h2>
+    <h2>Reservar Turno Médico</h2>
     <form id="formTurno">
         <div class="form-group">
             <label for="profesional_id">Profesional</label>
-            <select id="profesional_id" name="profesional_id" required>
+            <select id="profesional_id" required>
                 <option value="prof_01">Lic. María Gómez</option>
                 <option value="prof_02">Dr. Carlos Benítez</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="localidad">Localidad / Sede</label>
+            <select id="localidad" required>
+                <option value="Capital">Corrientes Capital</option>
+                <option value="Goya">Goya</option>
+                <option value="Paso de los Libres">Paso de los Libres</option>
+                <option value="Santo Tomé">Santo Tomé</option>
             </select>
         </div>
         <div class="form-group">
@@ -66,13 +80,13 @@
             <label for="inicio_iso">Fecha y Hora</label>
             <input type="datetime-local" id="inicio_iso" required>
         </div>
-        <button type="submit" id="btnEnviar">Reservar y Sincronizar Turno</button>
+        <button type="submit" id="btnEnviar">Confirmar y Registrar Turno</button>
     </form>
     <div id="estado"></div>
 </div>
 
 <div class="card">
-    <h2>Turnos Registrados</h2>
+    <h2>Turnos Asignados (Panel General)</h2>
     <button type="button" id="btnCargar" style="background-color: #0ea5e9; margin-bottom: 10px;">Actualizar Lista</button>
     <div style="overflow-x: auto;">
         <table id="tablaTurnos">
@@ -80,11 +94,13 @@
                 <tr>
                     <th>Paciente</th>
                     <th>Profesional</th>
+                    <th>Localidad</th>
                     <th>Fecha / Hora</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td colspan="3" style="text-align: center;">Haz clic en actualizar lista</td></tr>
+                <tr><td colspan="5" style="text-align: center;">Cargando turnos...</td></tr>
             </tbody>
         </table>
     </div>
@@ -101,15 +117,15 @@
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         btnEnviar.disabled = true;
-        btnEnviar.textContent = 'Procesando (Calendar + Email)...';
+        btnEnviar.textContent = 'Verificando y guardando...';
         estadoDiv.style.display = 'none';
 
-        const fechaInicioVal = document.getElementById('inicio_iso').value;
         const payload = {
             profesional_id: document.getElementById('profesional_id').value,
+            localidad: document.getElementById('localidad').value,
             paciente_nombre: document.getElementById('paciente_nombre').value.trim(),
             paciente_email: document.getElementById('paciente_email').value.trim(),
-            inicio_iso: new Date(fechaInicioVal).toISOString()
+            inicio_iso: new Date(document.getElementById('inicio_iso').value).toISOString()
         };
 
         try {
@@ -121,17 +137,17 @@
             const resultado = await response.json();
 
             if (resultado.status === 'success') {
-                mostrarMensaje('¡Turno guardado, agendado en Calendar y correo enviado con éxito!', 'exito');
+                mostrarMensaje('¡Turno reservado con éxito!', 'exito');
                 form.reset();
                 cargarTurnos();
             } else {
                 throw new Error(resultado.message);
             }
         } catch (error) {
-            mostrarMensaje(`Error: ${error.message}`, 'error');
+            mostrarMensaje(`No se pudo reservar: ${error.message}`, 'error');
         } finally {
             btnEnviar.disabled = false;
-            btnEnviar.textContent = 'Reservar y Sincronizar Turno';
+            btnEnviar.textContent = 'Confirmar y Registrar Turno';
         }
     });
 
@@ -145,14 +161,41 @@
             if (resultado.status === 'success' && resultado.turnos.length > 0) {
                 resultado.turnos.forEach(t => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${t.paciente_nombre}</td><td>${t.profesional_id}</td><td>${new Date(t.inicio_iso).toLocaleString()}</td>`;
+                    tr.innerHTML = `
+                        <td>${t.paciente_nombre}</td>
+                        <td>${t.profesional_id}</td>
+                        <td>${t.localidad || 'N/D'}</td>
+                        <td>${new Date(t.inicio_iso).toLocaleString()}</td>
+                        <td><button class="btn-cancel" onclick="cancelarTurno('${t.id_turno}')">Cancelar</button></td>
+                    `;
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No hay turnos registrados</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay turnos activos registrados</td></tr>';
             }
         } catch (err) {
             console.error('Error al listar:', err);
+        }
+    }
+
+    async function cancelarTurno(idTurno) {
+        if (!confirm('¿Estás seguro de cancelar este turno?')) return;
+
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ accion: 'cancelar', id_turno: idTurno })
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                alert('Turno cancelado correctamente.');
+                cargarTurnos();
+            } else {
+                alert('Error: ' + res.message);
+            }
+        } catch (e) {
+            alert('Error de red al cancelar.');
         }
     }
 

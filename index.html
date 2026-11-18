@@ -230,11 +230,22 @@
             if (resultado.status === 'success' && resultado.turnos.length > 0) {
                 resultado.turnos.forEach(t => {
                     const tr = document.createElement('tr');
+                    
+                    let fechaFormateada = 'Fecha no especificada';
+                    if (t.inicio_iso) {
+                        const fechaObj = new Date(t.inicio_iso);
+                        if (!isNaN(fechaObj.getTime())) {
+                            fechaFormateada = fechaObj.toLocaleString();
+                        } else {
+                            fechaFormateada = t.inicio_iso;
+                        }
+                    }
+
                     tr.innerHTML = `
-                        <td>${t.paciente_nombre}</td>
-                        <td>${t.profesional_id}</td>
+                        <td>${t.paciente_nombre || 'Sin nombre'}</td>
+                        <td>${t.profesional_id || 'N/D'}</td>
                         <td>${t.localidad || 'N/D'}</td>
-                        <td>${new Date(t.inicio_iso).toLocaleString()}</td>
+                        <td>${fechaFormateada}</td>
                         <td><button class="btn-cancel" onclick="cancelarTurno('${t.id_turno}')">Cancelar</button></td>
                     `;
                     tbody.appendChild(tr);

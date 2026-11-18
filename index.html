@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Turnos Médicos - Corrientes</title>
+    <title>Gestión de Turnos Médicos - Provincia de Corrientes</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -50,7 +50,7 @@
 <body>
 
 <div class="card">
-    <h2>Reservar Turno Médico</h2>
+    <h2>Reservar Turno Médico - Corrientes</h2>
     <form id="formTurno">
         <div class="form-group">
             <label for="profesional_id">Profesional</label>
@@ -59,27 +59,96 @@
                 <option value="prof_02">Dr. Carlos Benítez</option>
             </select>
         </div>
+
         <div class="form-group">
-            <label for="localidad">Localidad / Sede</label>
+            <label for="localidad">Localidad / Municipio</label>
             <select id="localidad" required>
-                <option value="Capital">Corrientes Capital</option>
+                <option value="">Seleccione una localidad...</option>
+                <option value="Alvear">Alvear</option>
+                <option value="Bella Vista">Bella Vista</option>
+                <option value="Berón de Astrada">Berón de Astrada</option>
+                <option value="Bonpland">Bonpland</option>
+                <option value="Caá Catí">Caá Catí</option>
+                <option value="Chavarría">Chavarría</option>
+                <option value="Concepción">Concepción</option>
+                <option value="Corrientes Capital">Corrientes Capital</option>
+                <option value="Cazadores Correntinos">Cazadores Correntinos</option>
+                <option value="Colonia Pando">Colonia Pando</option>
+                <option value="Colonia Libertad">Colonia Libertad</option>
+                <option value="Curuzú Cuatiá">Curuzú Cuatiá</option>
+                <option value="Cruz de los Milagros">Cruz de los Milagros</option>
+                <option value="Empedrado">Empedrado</option>
+                <option value="Esquina">Esquina</option>
+                <option value="Estación Torrent">Estación Torrent</option>
+                <option value="Felipe Yofre">Felipe Yofre</option>
+                <option value="Garaví">Garaví</option>
+                <option value="Garruchos">Garruchos</option>
+                <option value="Gobernador Virasoro">Gobernador Virasoro</option>
                 <option value="Goya">Goya</option>
+                <option value="Guaviraví">Guaviraví</option>
+                <option value="Herlitzka">Herlitzka</option>
+                <option value="Isla Apipé Grande">Isla Apipé Grande</option>
+                <option value="Itá Ibaté">Itá Ibaté</option>
+                <option value="Itatí">Itatí</option>
+                <option value="Ituzaingó">Ituzaingó</option>
+                <option value="Juan Pujol">Juan Pujol</option>
+                <option value="La Cruz">La Cruz</option>
+                <option value="Lomas de Vallejos">Lomas de Vallejos</option>
+                <option value="Loreto">Loreto</option>
+                <option value="Mariano I. Loza">Mariano I. Loza</option>
+                <option value="Mburucuyá">Mburucuyá</option>
+                <option value="Mercedes">Mercedes</option>
+                <option value="Mocoretá">Mocoretá</option>
+                <option value="Monte Caseros">Monte Caseros</option>
+                <option value="Nueve de Julio">Nueve de Julio</option>
+                <option value="Pago de los Deseos">Pago de los Deseos</option>
+                <option value="Palmar Grande">Palmar Grande</option>
+                <option value="Parada Pucheta">Parada Pucheta</option>
+                <option value="Paso de la Patria">Paso de la Patria</option>
                 <option value="Paso de los Libres">Paso de los Libres</option>
-                <option value="Santo Tomé">Santo Tomé</option>
+                <option value="Pedro R. Fernández">Pedro R. Fernández (Minta)</option>
+                <option value="Perugorría">Perugorría</option>
+                <option value="Pueblo Libertador">Pueblo Libertador</option>
+                <option value="Ramada Paso">Ramada Paso</option>
+                <option value="Riachuelo">Riachuelo</option>
+                <option value="Saladas">Saladas</option>
+                <option value="San Antonio">San Antonio</option>
+                <option value="San Carlos">San Carlos</option>
+                <option value="San Cosme">San Cosme</option>
+                <option value="San Isidro">San Isidro</option>
+                <option value="San Lorenzo">San Lorenzo</option>
+                <option value="San Luis del Palmar">San Luis del Palmar</option>
+                <option value="San Miguel">San Miguel</option>
+                <option value="San Roque">San Roque</option>
+                <option value="Santa Ana de los Guácaras">Santa Ana de los Guácaras</option>
+                <option value="Santa Lucía">Santa Lucía</option>
+                <option value="Santa Rosa">Santa Rosa</option>
+                <option value="Santiago Labougle">Santiago Labougle</option>
+                <option value="Sarmiento">Sarmiento</option>
+                <option value="Tabay">Tabay</option>
+                <option value="Tapebicuá">Tapebicuá</option>
+                <option value="Tatacua">Tatacua</option>
+                <option value="Tres de Abril">Tres de Abril</option>
+                <option value="Yapeyú">Yapeyú</option>
+                <option value="Yataí Ti Cuá">Yataí Ti Cuá</option>
             </select>
         </div>
+
         <div class="form-group">
             <label for="paciente_nombre">Nombre del Paciente</label>
             <input type="text" id="paciente_nombre" required placeholder="Ej. Juan Pérez">
         </div>
+
         <div class="form-group">
             <label for="paciente_email">Correo Electrónico</label>
             <input type="email" id="paciente_email" required placeholder="correo@ejemplo.com">
         </div>
+
         <div class="form-group">
             <label for="inicio_iso">Fecha y Hora</label>
             <input type="datetime-local" id="inicio_iso" required>
         </div>
+
         <button type="submit" id="btnEnviar">Confirmar y Registrar Turno</button>
     </form>
     <div id="estado"></div>
@@ -117,7 +186,7 @@
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         btnEnviar.disabled = true;
-        btnEnviar.textContent = 'Verificando y guardando...';
+        btnEnviar.textContent = 'Procesando notificaciones...';
         estadoDiv.style.display = 'none';
 
         const payload = {
@@ -137,7 +206,7 @@
             const resultado = await response.json();
 
             if (resultado.status === 'success') {
-                mostrarMensaje('¡Turno reservado con éxito!', 'exito');
+                mostrarMensaje('¡Turno registrado con éxito! Se notificó al paciente y al profesional.', 'exito');
                 form.reset();
                 cargarTurnos();
             } else {

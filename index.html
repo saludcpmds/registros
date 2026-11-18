@@ -53,10 +53,11 @@
     <h2>Reservar Turno Médico - Corrientes</h2>
     <form id="formTurno">
         <div class="form-group">
-            <label for="profesional_id">Profesional</label>
-            <select id="profesional_id" required>
-                <option value="prof_01">Lic. María Gómez</option>
-                <option value="prof_02">Dr. Carlos Benítez</option>
+            <label for="profesional_nombre">Profesional</label>
+            <select id="profesional_nombre" required>
+                <option value="">Seleccione un profesional...</option>
+                <option value="Lic. María Gómez">Lic. María Gómez</option>
+                <option value="Dr. Carlos Benítez">Dr. Carlos Benítez</option>
             </select>
         </div>
 
@@ -186,11 +187,11 @@
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         btnEnviar.disabled = true;
-        btnEnviar.textContent = 'Procesando notificaciones...';
+        btnEnviar.textContent = 'Procesando turnos y avisos...';
         estadoDiv.style.display = 'none';
 
         const payload = {
-            profesional_id: document.getElementById('profesional_id').value,
+            profesional_nombre: document.getElementById('profesional_nombre').value,
             localidad: document.getElementById('localidad').value,
             paciente_nombre: document.getElementById('paciente_nombre').value.trim(),
             paciente_email: document.getElementById('paciente_email').value.trim(),
@@ -241,9 +242,12 @@
                         }
                     }
 
+                    // Compatible con el campo profesional_nombre o profesional_id anterior
+                    const nombreProf = t.profesional_nombre || t.profesional_id || 'N/D';
+
                     tr.innerHTML = `
                         <td>${t.paciente_nombre || 'Sin nombre'}</td>
-                        <td>${t.profesional_id || 'N/D'}</td>
+                        <td>${nombreProf}</td>
                         <td>${t.localidad || 'N/D'}</td>
                         <td>${fechaFormateada}</td>
                         <td><button class="btn-cancel" onclick="cancelarTurno('${t.id_turno}')">Cancelar</button></td>

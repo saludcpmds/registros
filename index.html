@@ -229,7 +229,7 @@
             tbody.innerHTML = '';
 
             if (resultado.status === 'success' && resultado.turnos.length > 0) {
-                resultado.turnos.forEach(t => {
+                resultado.turnos.forEach((t) => {
                     const tr = document.createElement('tr');
                     
                     let fechaFormateada = 'Fecha no especificada';
@@ -242,7 +242,8 @@
                         }
                     }
 
-                    // Compatible con el campo profesional_nombre o profesional_id anterior
+                    // Mapeo seguro de ID de turno y nombre de profesional
+                    const idTurnoReal = t.id_turno || t.ID_Turno || t.id || '';
                     const nombreProf = t.profesional_nombre || t.profesional_id || 'N/D';
 
                     tr.innerHTML = `
@@ -250,7 +251,7 @@
                         <td>${nombreProf}</td>
                         <td>${t.localidad || 'N/D'}</td>
                         <td>${fechaFormateada}</td>
-                        <td><button class="btn-cancel" onclick="cancelarTurno('${t.id_turno}')">Cancelar</button></td>
+                        <td><button class="btn-cancel" onclick="cancelarTurno('${idTurnoReal}')">Cancelar</button></td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -263,23 +264,26 @@
     }
 
     async function cancelarTurno(idTurno) {
+        if (!idTurno || idTurno === 'undefined' || idTurno === '') {
+            alert('Error: Este turno no tiene un ID válido. Cree un turno nuevo.');
+            return;
+        }
+
         if (!confirm('¿Estás seguro de cancelar este turno?')) return;
 
         try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ accion: 'cancelar', id_turno: idTurno })
-            });
+            // Llamada directa por GET al script con la acción cancelar y el ID
+            const response = await fetch(`${APPS_SCRIPT_URL}?accion=cancelar&id_turno=${encodeURIComponent(String(idTurno).trim())}`);
             const res = await response.json();
+
             if (res.status === 'success') {
-                alert('Turno cancelado correctamente.');
+                alert('¡Turno cancelado correctamente!');
                 cargarTurnos();
             } else {
-                alert('Error: ' + res.message);
+                alert('No se pudo cancelar: ' + (res.message || 'Desconocido'));
             }
         } catch (e) {
-            alert('Error de red al cancelar.');
+            alert('Error al cancelar: ' + e.message);
         }
     }
 
